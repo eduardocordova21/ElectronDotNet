@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Runtime.InteropServices;
 
 namespace ElectronDotNet
 {
@@ -81,7 +82,9 @@ namespace ElectronDotNet
 
         private async void ElectronStartup()
         {
-            var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions { Width = 1152, Height = 940, Show = false});
+            CreateMenu();
+
+            var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions { Width = 1152, Height = 940, Show = false });
 
             await window.WebContents.Session.ClearCacheAsync();
 
@@ -92,6 +95,77 @@ namespace ElectronDotNet
             {
                 Electron.App.Quit();
             };
+        }
+
+        private void CreateMenu()
+        {
+            bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            MenuItem[] menu = null;
+
+            MenuItem[] appMenu = new MenuItem[]
+            {
+                new MenuItem { Role = MenuRole.about },
+                new MenuItem { Type = MenuType.separator },
+                new MenuItem { Role = MenuRole.services },
+                new MenuItem { Type = MenuType.separator },
+                new MenuItem { Role = MenuRole.quit }
+            };
+
+            MenuItem[] fileMenu = new MenuItem[]
+            {
+                new MenuItem { Role = isMac ? MenuRole.close : MenuRole.quit }
+            };
+
+            MenuItem[] viewMenu = new MenuItem[]
+            {
+                new MenuItem { Role = MenuRole.reload },
+                new MenuItem { Role = MenuRole.forcereload },
+                new MenuItem { Role = MenuRole.toggledevtools },
+                new MenuItem { Type = MenuType.separator },
+                new MenuItem { Role = MenuRole.resetzoom },
+                new MenuItem { Type = MenuType.separator },
+                new MenuItem { Role = MenuRole.togglefullscreen }
+            };
+
+            if (isMac)
+            {
+                menu = new MenuItem[]
+                {
+                    new MenuItem {
+                        Label = "Electron",
+                        Type = MenuType.submenu,
+                        Submenu = appMenu
+                    },
+                    new MenuItem {
+                        Label = "File",
+                        Type = MenuType.submenu,
+                        Submenu = fileMenu
+                    },
+                    new MenuItem {
+                        Label = "View",
+                        Type = MenuType.submenu,
+                        Submenu = viewMenu
+                    }
+                };
+            }
+            else
+            {
+                menu = new MenuItem[]
+                {
+                    new MenuItem {
+                        Label = "File",
+                        Type = MenuType.submenu,
+                        Submenu = fileMenu
+                    },
+                    new MenuItem {
+                        Label = "View",
+                        Type = MenuType.submenu,
+                        Submenu = viewMenu
+                    }
+                };
+            }
+
+            Electron.Menu.SetApplicationMenu(menu);
         }
     }
 }
