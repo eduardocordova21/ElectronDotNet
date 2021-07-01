@@ -1,4 +1,5 @@
 using ElectronNET.API;
+using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -80,7 +81,13 @@ namespace ElectronDotNet
 
         private async void ElectronStartup()
         {
-            var window = await Electron.WindowManager.CreateWindowAsync();
+            var window = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions { Width = 1152, Height = 940, Show = false});
+
+            await window.WebContents.Session.ClearCacheAsync();
+
+            window.OnReadyToShow += () => window.Show();
+            window.SetTitle("Exemplo do Electron.NET");
+
             window.OnClosed += () =>
             {
                 Electron.App.Quit();
