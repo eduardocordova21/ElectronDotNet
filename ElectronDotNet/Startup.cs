@@ -1,3 +1,4 @@
+using ElectronNET.API;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -70,6 +71,20 @@ namespace ElectronDotNet
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
+
+            if (HybridSupport.IsElectronActive)
+            {
+                ElectronStartup();
+            }
+        }
+
+        private async void ElectronStartup()
+        {
+            var window = await Electron.WindowManager.CreateWindowAsync();
+            window.OnClosed += () =>
+            {
+                Electron.App.Quit();
+            };
         }
     }
 }
